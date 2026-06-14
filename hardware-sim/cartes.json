@@ -1,0 +1,22 @@
+[
+  { "uid": "A3F2C1", "nom": "Diallo", "prenom": "Amadou", "solde": 15000, "services_autorises": ["restaurant", "bibliotheque", "transport"] },
+  { "uid": "B7E4D2", "nom": "Ndiaye", "prenom": "Fatou", "solde": 8500, "services_autorises": ["restaurant", "transport"] },
+  { "uid": "C1D5E3", "nom": "Sow", "prenom": "Ibrahima", "solde": 22000, "services_autorises": ["restaurant", "bibliotheque", "transport"] },
+  { "uid": "D9F6A4", "nom": "Ba", "prenom": "Mariama", "solde": 5000, "services_autorises": ["restaurant"] },
+  { "uid": "E2B8C5", "nom": "Fall", "prenom": "Cheikh", "solde": 18500, "services_autorises": ["restaurant", "bibliotheque", "transport"] },
+  { "uid": "F4A1D6", "nom": "Gueye", "prenom": "Aissatou", "solde": 3200, "services_autorises": ["restaurant", "transport"] },
+  { "uid": "G6C3E7", "nom": "Mbaye", "prenom": "Ousmane", "solde": 11000, "services_autorises": ["restaurant", "bibliotheque"] },
+  { "uid": "H8E5F8", "nom": "Diouf", "prenom": "Rokhaya", "solde": 0, "services_autorises": ["bibliotheque"] },
+  { "uid": "I1G7A9", "nom": "Sarr", "prenom": "Moussa", "solde": 27500, "services_autorises": ["restaurant", "bibliotheque", "transport"] },
+  { "uid": "J3H9B1", "nom": "Thiaw", "prenom": "Ndéye", "solde": 6800, "services_autorises": ["restaurant"] },
+  { "uid": "K5I2C2", "nom": "Cissé", "nom": "Cissé", "prenom": "Alioune", "solde": 14000, "services_autorises": ["restaurant", "transport"] },
+  { "uid": "L7J4D3", "nom": "Diop", "prenom": "Khady", "solde": 9100, "services_autorises": ["restaurant", "bibliotheque", "transport"] },
+  { "uid": "M9K6E4", "nom": "Toure", "prenom": "Seydou", "solde": 500, "services_autorises": ["restaurant"] },
+  { "uid": "N2L8F5", "nom": "Faye", "prenom": "Coumba", "solde": 19800, "services_autorises": ["restaurant", "bibliotheque", "transport"] },
+  { "uid": "O4M1G6", "nom": "Ndour", "prenom": "Pape", "solde": 7300, "services_autorises": ["transport"] },
+  { "uid": "P6N3H7", "nom": "Sy", "prenom": "Binta", "solde": 12600, "services_autorises": ["restaurant", "bibliotheque"] },
+  { "uid": "Q8O5I8", "nom": "Kane", "prenom": "Abdoulaye", "solde": 4400, "services_autorises": ["restaurant", "transport"] },
+  { "uid": "R1P7J9", "nom": "Diagne", "prenom": "Sokhna", "solde": 31000, "services_autorises": ["restaurant", "bibliotheque", "transport"] },
+  { "uid": "S3Q9K1", "nom": "Camara", "prenom": "Lamine", "solde": 2100, "services_autorises": ["restaurant"] },
+  { "uid": "T5R2L2", "nom": "Badji", "prenom": "Yacine", "solde": 16700, "services_autorises": ["restaurant", "bibliotheque", "transport"] }
+]
