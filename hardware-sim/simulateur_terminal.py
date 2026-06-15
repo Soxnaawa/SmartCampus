@@ -1,10 +1,12 @@
 import json
 import random
-import requests
-from datetime import datetime
 import uuid
+from datetime import datetime
+import paho.mqtt.client as mqtt
 
-API_URL = "http://localhost:8000"
+MQTT_BROKER = "localhost"
+MQTT_PORT = 1883
+MQTT_TOPIC = "smartcampus/terminal/transaction"
 
 def charger_cartes(chemin="cartes.json"):
     with open(chemin, "r") as f:
@@ -20,12 +22,19 @@ def construire_message(carte, type_evenement, service, montant):
         "nonce": uuid.uuid4().hex[:12]
     }
 
-def envoyer_transaction(message):
+def publier_mqtt(message):
+    client = mqtt.Client()
     try:
-        response = requests.post(f"{API_URL}/auth/carte", json=message, timeout=5)
-        return response.json()
-    except requests.exceptions.ConnectionError:
-        return {"status": "erreur", "message": "API non disponible — mode mock activé", "autorise": True}
+        client.connect(MQTT_BROKER, MQTT_PORT, 60)
+        payload = json.dumps(message)
+        result = client.publish(MQTT_TOPIC, payload)
+        client.disconnect()
+        if result.rc == 0:
+            return {"status": "ok", "message": "Transaction publiée sur MQTT"}
+        else:
+            return {"status": "erreur", "message": "Échec publication MQTT"}
+    except Exception:
+        return {"status": "mock", "message": "Broker MQTT non disponible — mode mock activé"}
 
 def simuler_evenement(carte):
     services_disponibles = carte["services_autorises"]
@@ -42,15 +51,17 @@ def simuler_evenement(carte):
         montant = 0
 
     message = construire_message(carte, type_evenement, service, montant)
-    print(f"\n--- Terminal RFID ---")
+
+    print(f"\n--- Terminal RFID (RC522 simulé) ---")
     print(f"Carte      : {carte['uid']} ({carte['prenom']} {carte['nom']})")
     print(f"Service    : {service}")
     print(f"Type       : {type_evenement}")
     print(f"Montant    : {montant} FCFA")
-    print(f"Envoi vers : {API_URL}/auth/carte ...")
+    print(f"Topic MQTT : {MQTT_TOPIC}")
+    print(f"Payload    : {json.dumps(message, indent=2)}")
 
-    reponse = envoyer_transaction(message)
-    print(f"Réponse    : {reponse.get('message', reponse)}")
+    reponse = publier_mqtt(message)
+    print(f"Résultat   : {reponse['message']}")
     return reponse
 
 if __name__ == "__main__":
