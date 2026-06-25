@@ -12,7 +12,7 @@ from pathlib import Path
 
 API_BASE = "http://127.0.0.1:8000"
 ENDPOINT_SCAN = f"{API_BASE}/api/iot/scan/"
-CERTS_DIR = Path("certs/cards")  # clés privées générées par P3 (seed_data)
+CERTS_DIR = Path("certs/cards")  # cles privees generees par P3 (seed_data)
 
 SERVICE_TERMINAL = {
     "restaurant":   "RESTO-01",
@@ -25,7 +25,7 @@ def charger_cartes(chemin="cartes.json"):
         return json.load(f)
 
 def charger_cle_privee(uid):
-    """Charge la clé privée PEM générée par P3 pour cette carte."""
+    """Charge la cle privee PEM generee par P3 pour cette carte."""
     chemin = CERTS_DIR / f"{uid}.pem"
     if not chemin.exists():
         return None
@@ -33,7 +33,7 @@ def charger_cle_privee(uid):
         return f.read()
 
 def signer_nonce(cle_privee_pem, nonce_hex):
-    """Signe le nonce avec la clé privée RSA de la carte."""
+    """Signe le nonce avec la cle privee RSA de la carte."""
     import base64
     from cryptography.hazmat.primitives import hashes, serialization
     from cryptography.hazmat.primitives.asymmetric import padding
@@ -53,20 +53,18 @@ def simuler_evenement(carte):
     nonce_hex = secrets.token_hex(32)
     timestamp_ms = int(time.time() * 1000)
 
-    print(f"\n--- Terminal RFID (RC522 simulé) ---")
+    print(f"\n--- Terminal RFID (RC522 simule) ---")
     print(f"Carte      : {carte['uid']} ({carte['prenom']} {carte['nom']})")
-    print(f"Service    : {service} → terminal {terminal_id}")
+    print(f"Service    : {service} -> terminal {terminal_id}")
     print(f"Nonce      : {nonce_hex[:16]}...")
 
-    # Essai avec signature RSA si la clé privée existe
     cle_privee = charger_cle_privee(carte["uid"])
     if cle_privee:
         signature = signer_nonce(cle_privee, nonce_hex)
-        print(f"Signature  : ✅ RSA générée")
+        print(f"Signature  : [OK] RSA generee")
     else:
-        # Mode dégradé : pas de clé privée disponible (P3 pas encore lancé)
         signature = "SIGNATURE_MANQUANTE"
-        print(f"Signature  : ⚠️  clé privée absente — mode mock")
+        print(f"Signature  : [ABSENT] cle privee absente -- mode mock")
 
     payload = {
         "uid": carte["uid"],
@@ -82,10 +80,10 @@ def simuler_evenement(carte):
     try:
         reponse = requests.post(ENDPOINT_SCAN, json=payload, timeout=5)
         print(f"Statut HTTP: {reponse.status_code}")
-        print(f"Réponse    : {reponse.json()}")
+        print(f"Reponse    : {reponse.json()}")
         return reponse.json()
     except requests.exceptions.ConnectionError:
-        print("Résultat   : ⚠️  API non disponible — mode mock activé")
+        print("Resultat   : API non disponible -- mode mock active")
         return {"status": "mock", "message": "API P3 non disponible"}
 
 if __name__ == "__main__":
