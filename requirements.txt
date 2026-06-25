@@ -1,0 +1,42 @@
+# ---------------------------------------------------------------------------
+# Dépendances backend Smart Campus (P3)
+# Python 3.12+ / Django 5.x
+# ---------------------------------------------------------------------------
+
+# Cœur web
+Django==5.1.4
+djangorestframework==3.15.2
+
+# Authentification JWT (access court + refresh + blacklist au logout)
+djangorestframework-simplejwt==5.3.1
+
+# CORS (le frontend est une application séparée)
+django-cors-headers==4.6.0
+
+# Documentation OpenAPI 3 auto-générée (schéma + Swagger UI + ReDoc)
+drf-spectacular==0.28.0
+
+# Base de données PostgreSQL (driver moderne)
+psycopg[binary]==3.2.3
+
+# Lecture des variables d'environnement / fichier .env
+django-environ==0.11.2
+
+# Chiffrement des données personnelles au repos (AES-256-GCM) + X.509 / RSA
+cryptography==44.0.0
+
+# Réception des scans de carte simulés via MQTT
+paho-mqtt==2.1.0
+
+# Génération des reçus de scolarité en PDF
+reportlab==4.2.5
+
+# Cache / blacklist / files (utilisé par docker-compose, service Redis)
+redis==5.2.1
+
+# Serveur WSGI de production (utilisé dans le Dockerfile)
+gunicorn==23.0.0
+
+# ----- Outils de test / qualité -----
+pytest==8.3.4
+pytest-django==4.9.0

@@ -1,0 +1,57 @@
+# ===========================================================================
+# .gitignore — Smart Campus backend (P3)
+# ===========================================================================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# --- Environnements virtuels ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- Django ---
+*.log
+db.sqlite3
+db.sqlite3-journal
+*.sqlite3
+/media/
+/staticfiles/
+/static/
+
+# --- Secrets / environnement ---
+# On versionne .env.example, jamais le vrai .env ni les variantes locales.
+.env
+.env.*
+!.env.example
+# Clés privées / certificats (cartes, JWT RS256) générés localement.
+*.pem
+*.key
+certs/
+
+# --- Schéma OpenAPI transitoire à la racine (le figé est dans docs/) ---
+/schema.yaml
+/schema.yml
+/schema.json
+
+# --- Tests / qualité ---
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# --- IDE / OS ---
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db

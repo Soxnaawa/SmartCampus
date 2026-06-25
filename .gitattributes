@@ -1,0 +1,16 @@
+# Normalisation des fins de ligne : LF dans le dépôt (cohérence multi-OS).
+* text=auto eol=lf
+
+# Scripts shell : impérativement LF (sinon cassent dans les conteneurs Linux).
+*.sh text eol=lf
+
+# Fichiers Windows : CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binaires (jamais de conversion de fins de ligne).
+*.pem binary
+*.png binary
+*.jpg binary
+*.pdf binary
+*.ico binary

@@ -1,0 +1,1796 @@
+openapi: 3.0.3
+info:
+  title: Smart Campus — API backend (P3)
+  version: 1.0.0
+  description: |-
+    API REST du système universitaire Smart Campus (ESP/UCAD).
+
+    **Authentification** : JWT (Bearer). Récupérer un token via `POST /api/auth/login/`, puis l'envoyer dans l'en-tête `Authorization: Bearer <access>`.
+
+    **Montants** : entiers en centimes de FCFA (750 FCFA = 75000).
+
+    **Scans signés** : les endpoints de débit et `/api/iot/scan/` exigent une enveloppe signée par la carte (nonce + signature RSA). En dev, la générer avec `python manage.py simuler_scan`.
+paths:
+  /api/auth/login/:
+    post:
+      operationId: api_auth_login_create
+      description: Authentifie un utilisateur et renvoie un token d'accès (15 min)
+        + un token de rafraîchissement, avec son rôle.
+      summary: Connexion (obtenir un couple de tokens)
+      tags:
+      - Authentification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JetonAvecRoleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/JetonAvecRoleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/JetonAvecRoleRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReponseConnexion'
+          description: ''
+  /api/auth/refresh/:
+    post:
+      operationId: api_auth_refresh_create
+      description: POST /api/auth/refresh/ → nouvel access token à partir d'un refresh.
+      summary: Rafraîchir le token d'accès
+      tags:
+      - Authentification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/auth/logout/:
+    post:
+      operationId: api_auth_logout_create
+      description: POST /api/auth/logout/ → blacklist du refresh token fourni.
+      summary: Déconnexion (blacklist du refresh token)
+      tags:
+      - Authentification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeconnexionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeconnexionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeconnexionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '205':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: Déconnecté.
+  /api/auth/me/:
+    get:
+      operationId: api_auth_me_retrieve
+      description: GET /api/auth/me/ → profil de l'utilisateur connecté.
+      summary: Profil de l'utilisateur connecté
+      tags:
+      - Authentification
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Utilisateur'
+          description: ''
+  /api/transaction/debit/:
+    post:
+      operationId: api_transaction_debit_create
+      description: Vérifie l'enveloppe signée par la carte (nonce, signature RSA,
+        horodatage) puis débite le solde de façon atomique. Renvoie 201 si validé,
+        402 si solde insuffisant (transaction tracée), 409 en cas de rejeu de nonce.
+      summary: Débiter une carte (caissier + signature carte)
+      tags:
+      - Monétique
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DebitRequest'
+            examples:
+              DébitSigné:
+                value:
+                  uid: SC-2025-00001
+                  terminal_id: RESTO-01
+                  timestamp: 1718450000000
+                  nonce: a1b2…(hex)
+                  signature: Base64Signature==
+                  montant: 15000
+                summary: Débit signé
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DebitRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DebitRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+        '402':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+  /api/transaction/credit/:
+    post:
+      operationId: api_transaction_credit_create
+      description: 'Recharge au guichet : pas de signature carte requise. Crée une
+        transaction de crédit et incrémente le solde de façon atomique.'
+      summary: Recharger un solde (caissier ou admin)
+      tags:
+      - Monétique
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreditRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreditRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+  /api/solde/{uid}/:
+    get:
+      operationId: api_solde_retrieve
+      description: Accessible à l'étudiant propriétaire ou à un administrateur.
+      summary: Consulter le solde d'une carte
+      parameters:
+      - in: path
+        name: uid
+        schema:
+          type: string
+        required: true
+      tags:
+      - Monétique
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Solde'
+          description: ''
+  /api/transactions/{uid}/:
+    get:
+      operationId: api_transactions_list
+      description: Liste paginée des transactions d'une carte. Accessible à l'étudiant
+        propriétaire ou à un administrateur. Filtres optionnels.
+      summary: Historique des transactions (paginé)
+      parameters:
+      - in: query
+        name: date_debut
+        schema:
+          type: string
+        description: Date min (AAAA-MM-JJ).
+      - in: query
+        name: date_fin
+        schema:
+          type: string
+        description: Date max (AAAA-MM-JJ).
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: statut
+        schema:
+          type: string
+        description: valide | refuse | suspect | annule
+      - in: query
+        name: type
+        schema:
+          type: string
+        description: debit | credit | remboursement
+      - in: path
+        name: uid
+        schema:
+          type: string
+        required: true
+      tags:
+      - Monétique
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTransactionList'
+          description: ''
+  /api/carte/bloquer/:
+    post:
+      operationId: api_carte_bloquer_create
+      description: POST /api/carte/bloquer/ — bloque une carte (admin).
+      summary: Bloquer une carte (admin)
+      tags:
+      - Monétique
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BloquerCarteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BloquerCarteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BloquerCarteRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReponseBlocage'
+          description: ''
+  /api/stats/dashboard/:
+    get:
+      operationId: api_stats_dashboard_retrieve
+      description: GET /api/stats/dashboard/ — KPIs globaux (admin).
+      summary: Tableau de bord — KPIs globaux (admin)
+      tags:
+      - Monétique
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReponseDashboard'
+          description: ''
+  /api/scolarite/payer/:
+    post:
+      operationId: api_scolarite_payer_create
+      description: POST /api/scolarite/payer/ — enregistre un paiement (caissier).
+      summary: Enregistrer un paiement de scolarité (caissier)
+      tags:
+      - Scolarité
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayerRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PayerRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PayerRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaiementScolarite'
+          description: ''
+  /api/scolarite/statut/{uid}/:
+    get:
+      operationId: api_scolarite_statut_retrieve
+      description: 'Contrat de sortie FIGÉ. Ne renvoie que les champs publics du contrôle
+        : aucune donnée nominative ni financière. `statut` ∈ a_jour | en_retard |
+        exonere.'
+      summary: Statut de scolarité pour le contrôle (contrôleur/admin)
+      parameters:
+      - in: path
+        name: uid
+        schema:
+          type: string
+        required: true
+      tags:
+      - Scolarité
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatutScolarite'
+          description: ''
+  /api/scolarite/recu/{id}/:
+    get:
+      operationId: api_scolarite_recu_retrieve
+      description: Réservé à l'étudiant concerné ou à un administrateur. Renvoie un
+        fichier PDF (application/pdf).
+      summary: Télécharger le reçu PDF d'un paiement
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Scolarité
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+          description: Le reçu au format PDF.
+  /api/scolarite/exonerer/:
+    post:
+      operationId: api_scolarite_exonerer_create
+      description: POST /api/scolarite/exonerer/ — marque un étudiant exonéré (admin).
+      summary: Marquer un étudiant exonéré (admin)
+      tags:
+      - Scolarité
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExonererRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExonererRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExonererRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaiementScolarite'
+          description: ''
+  /api/iot/scan/:
+    post:
+      operationId: api_iot_scan_create
+      description: 'Équivalent HTTP du flux MQTT. Pas de JWT : l''authentification
+        est la signature de la carte. Rejette les nonces rejoués (409), les signatures
+        invalides (400), les horodatages expirés (400) et les cartes inactives (403).'
+      summary: Recevoir un scan de carte (signé)
+      tags:
+      - IoT
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ScanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ScanRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReponseScan'
+          description: ''
+  /api/etudiants/:
+    post:
+      operationId: api_etudiants_create
+      description: |-
+        CRUD des étudiants.
+
+        - Lecture (list/retrieve) : caissier ou admin.
+        - Écriture (create/update/delete) : admin uniquement.
+      tags:
+      - Étudiants
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EtudiantRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EtudiantRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EtudiantRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Etudiant'
+          description: ''
+    get:
+      operationId: api_etudiants_list
+      description: |-
+        CRUD des étudiants.
+
+        - Lecture (list/retrieve) : caissier ou admin.
+        - Écriture (create/update/delete) : admin uniquement.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - Étudiants
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEtudiantResumeList'
+          description: ''
+  /api/etudiants/{uid_carte}/:
+    delete:
+      operationId: api_etudiants_destroy
+      description: |-
+        CRUD des étudiants.
+
+        - Lecture (list/retrieve) : caissier ou admin.
+        - Écriture (create/update/delete) : admin uniquement.
+      parameters:
+      - in: path
+        name: uid_carte
+        schema:
+          type: string
+          pattern: ^[^/]+$
+        required: true
+      tags:
+      - Étudiants
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+    put:
+      operationId: api_etudiants_update
+      description: |-
+        CRUD des étudiants.
+
+        - Lecture (list/retrieve) : caissier ou admin.
+        - Écriture (create/update/delete) : admin uniquement.
+      parameters:
+      - in: path
+        name: uid_carte
+        schema:
+          type: string
+          pattern: ^[^/]+$
+        required: true
+      tags:
+      - Étudiants
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EtudiantRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EtudiantRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EtudiantRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Etudiant'
+          description: ''
+    patch:
+      operationId: api_etudiants_partial_update
+      description: |-
+        CRUD des étudiants.
+
+        - Lecture (list/retrieve) : caissier ou admin.
+        - Écriture (create/update/delete) : admin uniquement.
+      parameters:
+      - in: path
+        name: uid_carte
+        schema:
+          type: string
+          pattern: ^[^/]+$
+        required: true
+      tags:
+      - Étudiants
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEtudiantRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEtudiantRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEtudiantRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Etudiant'
+          description: ''
+    get:
+      operationId: api_etudiants_retrieve
+      description: |-
+        CRUD des étudiants.
+
+        - Lecture (list/retrieve) : caissier ou admin.
+        - Écriture (create/update/delete) : admin uniquement.
+      parameters:
+      - in: path
+        name: uid_carte
+        schema:
+          type: string
+          pattern: ^[^/]+$
+        required: true
+      tags:
+      - Étudiants
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Etudiant'
+          description: ''
+  /api/terminaux/:
+    post:
+      operationId: api_terminaux_create
+      description: |-
+        CRUD des terminaux.
+
+        - Lecture : tout utilisateur authentifié (les terminaux ne sont pas secrets).
+        - Écriture : admin uniquement.
+      tags:
+      - Terminaux
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TerminalRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TerminalRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TerminalRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Terminal'
+          description: ''
+    get:
+      operationId: api_terminaux_list
+      description: |-
+        CRUD des terminaux.
+
+        - Lecture : tout utilisateur authentifié (les terminaux ne sont pas secrets).
+        - Écriture : admin uniquement.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - Terminaux
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTerminalList'
+          description: ''
+  /api/terminaux/{code}/:
+    delete:
+      operationId: api_terminaux_destroy
+      description: |-
+        CRUD des terminaux.
+
+        - Lecture : tout utilisateur authentifié (les terminaux ne sont pas secrets).
+        - Écriture : admin uniquement.
+      parameters:
+      - in: path
+        name: code
+        schema:
+          type: string
+          pattern: ^[^/]+$
+        required: true
+      tags:
+      - Terminaux
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+    put:
+      operationId: api_terminaux_update
+      description: |-
+        CRUD des terminaux.
+
+        - Lecture : tout utilisateur authentifié (les terminaux ne sont pas secrets).
+        - Écriture : admin uniquement.
+      parameters:
+      - in: path
+        name: code
+        schema:
+          type: string
+          pattern: ^[^/]+$
+        required: true
+      tags:
+      - Terminaux
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TerminalRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TerminalRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TerminalRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Terminal'
+          description: ''
+    patch:
+      operationId: api_terminaux_partial_update
+      description: |-
+        CRUD des terminaux.
+
+        - Lecture : tout utilisateur authentifié (les terminaux ne sont pas secrets).
+        - Écriture : admin uniquement.
+      parameters:
+      - in: path
+        name: code
+        schema:
+          type: string
+          pattern: ^[^/]+$
+        required: true
+      tags:
+      - Terminaux
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTerminalRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTerminalRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTerminalRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Terminal'
+          description: ''
+    get:
+      operationId: api_terminaux_retrieve
+      description: |-
+        CRUD des terminaux.
+
+        - Lecture : tout utilisateur authentifié (les terminaux ne sont pas secrets).
+        - Écriture : admin uniquement.
+      parameters:
+      - in: path
+        name: code
+        schema:
+          type: string
+          pattern: ^[^/]+$
+        required: true
+      tags:
+      - Terminaux
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Terminal'
+          description: ''
+components:
+  schemas:
+    BloquerCarteRequest:
+      type: object
+      properties:
+        uid:
+          type: string
+          minLength: 1
+          maxLength: 20
+      required:
+      - uid
+    CreditRequest:
+      type: object
+      description: 'Entrée de la recharge (pas de signature carte : opération guichet).'
+      properties:
+        uid:
+          type: string
+          minLength: 1
+          maxLength: 20
+        montant:
+          type: integer
+          minimum: 1
+        terminal_id:
+          type: string
+          minLength: 1
+          maxLength: 20
+        metadata: {}
+      required:
+      - montant
+      - uid
+    DebitRequest:
+      type: object
+      description: 'Entrée du débit : enveloppe signée + montant à débiter.'
+      properties:
+        uid:
+          type: string
+          minLength: 1
+          maxLength: 20
+        terminal_id:
+          type: string
+          minLength: 1
+          maxLength: 20
+        timestamp:
+          type: integer
+          description: Epoch en millisecondes.
+        nonce:
+          type: string
+          minLength: 1
+          maxLength: 64
+        signature:
+          type: string
+          minLength: 1
+        montant:
+          type: integer
+          minimum: 1
+          description: Montant en centimes FCFA (> 0).
+      required:
+      - montant
+      - nonce
+      - signature
+      - terminal_id
+      - timestamp
+      - uid
+    DeconnexionRequest:
+      type: object
+      description: 'Entrée du logout : le refresh token à blacklister.'
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    Etudiant:
+      type: object
+      description: |-
+        Fiche étudiant complète (usage administratif).
+
+        Les champs `nom`, `prenom`, `matricule` sont exposés en clair : ils
+        correspondent aux propriétés du modèle qui chiffrent/déchiffrent
+        automatiquement vers les colonnes `*_chiffre`. Ce serializer ne doit servir
+        qu'aux rôles autorisés (admin/caissier), jamais au contrôle public.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          title: Identifiant
+        uid_carte:
+          type: string
+          title: UID de la carte
+          description: 'Identifiant unique de la carte physique, ex : SC-2025-00147.'
+          maxLength: 20
+        nom:
+          type: string
+          maxLength: 100
+        prenom:
+          type: string
+          maxLength: 100
+        matricule:
+          type: string
+          maxLength: 50
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        filiere:
+          type: string
+          title: Filière
+          maxLength: 100
+        statut:
+          allOf:
+          - $ref: '#/components/schemas/StatutCarteEnum'
+          title: Statut de la carte
+        certificat_pub:
+          type: string
+          title: Certificat X.509 (PEM)
+          description: Certificat de la carte, utilisé pour vérifier les signatures.
+        compte:
+          type: string
+          format: uuid
+          title: Compte de connexion
+          nullable: true
+        cree_le:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Créé le
+      required:
+      - certificat_pub
+      - cree_le
+      - email
+      - filiere
+      - id
+      - matricule
+      - nom
+      - prenom
+      - uid_carte
+    EtudiantRequest:
+      type: object
+      description: |-
+        Fiche étudiant complète (usage administratif).
+
+        Les champs `nom`, `prenom`, `matricule` sont exposés en clair : ils
+        correspondent aux propriétés du modèle qui chiffrent/déchiffrent
+        automatiquement vers les colonnes `*_chiffre`. Ce serializer ne doit servir
+        qu'aux rôles autorisés (admin/caissier), jamais au contrôle public.
+      properties:
+        uid_carte:
+          type: string
+          minLength: 1
+          title: UID de la carte
+          description: 'Identifiant unique de la carte physique, ex : SC-2025-00147.'
+          maxLength: 20
+        nom:
+          type: string
+          minLength: 1
+          maxLength: 100
+        prenom:
+          type: string
+          minLength: 1
+          maxLength: 100
+        matricule:
+          type: string
+          minLength: 1
+          maxLength: 50
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 255
+        filiere:
+          type: string
+          minLength: 1
+          title: Filière
+          maxLength: 100
+        statut:
+          allOf:
+          - $ref: '#/components/schemas/StatutCarteEnum'
+          title: Statut de la carte
+        certificat_pub:
+          type: string
+          minLength: 1
+          title: Certificat X.509 (PEM)
+          description: Certificat de la carte, utilisé pour vérifier les signatures.
+        compte:
+          type: string
+          format: uuid
+          title: Compte de connexion
+          nullable: true
+      required:
+      - certificat_pub
+      - email
+      - filiere
+      - matricule
+      - nom
+      - prenom
+      - uid_carte
+    EtudiantResume:
+      type: object
+      description: Vue allégée d'un étudiant (sans données chiffrées) pour les listes.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          title: Identifiant
+        uid_carte:
+          type: string
+          readOnly: true
+          title: UID de la carte
+          description: 'Identifiant unique de la carte physique, ex : SC-2025-00147.'
+        filiere:
+          type: string
+          readOnly: true
+          title: Filière
+        statut:
+          allOf:
+          - $ref: '#/components/schemas/StatutCarteEnum'
+          readOnly: true
+          title: Statut de la carte
+        cree_le:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Créé le
+      required:
+      - cree_le
+      - filiere
+      - id
+      - statut
+      - uid_carte
+    ExonererRequest:
+      type: object
+      description: Entrée de POST /api/scolarite/exonerer/.
+      properties:
+        uid:
+          type: string
+          minLength: 1
+          maxLength: 20
+        periode_couverte:
+          type: string
+          minLength: 1
+          default: ''
+          maxLength: 7
+        montant:
+          type: integer
+          minimum: 0
+          default: 0
+      required:
+      - uid
+    JetonAvecRoleRequest:
+      type: object
+      description: |-
+        Ajoute le rôle (et quelques infos) dans le payload du token et dans la
+        réponse de login, pour éviter au frontend un aller-retour supplémentaire.
+      properties:
+        username:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - password
+      - username
+    Message:
+      type: object
+      description: 'Réponse générique { detail: ... } (documentation OpenAPI).'
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    PaginatedEtudiantResumeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/EtudiantResume'
+    PaginatedTerminalList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Terminal'
+    PaginatedTransactionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+    PaiementScolarite:
+      type: object
+      description: Représentation d'un paiement (lecture).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          title: Identifiant
+        uid:
+          type: string
+          readOnly: true
+        type_periode:
+          allOf:
+          - $ref: '#/components/schemas/TypePeriodeEnum'
+          readOnly: true
+          title: Type de période
+        periode_couverte:
+          type: string
+          readOnly: true
+          title: Période couverte
+          description: 'Ex : 2025-11 (mois) ou 2025-S1 (semestre).'
+        montant:
+          type: integer
+          readOnly: true
+          title: Montant (centimes FCFA)
+          description: '> 0, sauf exonération où 0 est autorisé.'
+        statut:
+          allOf:
+          - $ref: '#/components/schemas/StatutPaiementEnum'
+          readOnly: true
+        caissier_username:
+          type: string
+          readOnly: true
+        numero_recu:
+          type: string
+          readOnly: true
+        cree_le:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Créé le
+      required:
+      - caissier_username
+      - cree_le
+      - id
+      - montant
+      - numero_recu
+      - periode_couverte
+      - statut
+      - type_periode
+      - uid
+    PatchedEtudiantRequest:
+      type: object
+      description: |-
+        Fiche étudiant complète (usage administratif).
+
+        Les champs `nom`, `prenom`, `matricule` sont exposés en clair : ils
+        correspondent aux propriétés du modèle qui chiffrent/déchiffrent
+        automatiquement vers les colonnes `*_chiffre`. Ce serializer ne doit servir
+        qu'aux rôles autorisés (admin/caissier), jamais au contrôle public.
+      properties:
+        uid_carte:
+          type: string
+          minLength: 1
+          title: UID de la carte
+          description: 'Identifiant unique de la carte physique, ex : SC-2025-00147.'
+          maxLength: 20
+        nom:
+          type: string
+          minLength: 1
+          maxLength: 100
+        prenom:
+          type: string
+          minLength: 1
+          maxLength: 100
+        matricule:
+          type: string
+          minLength: 1
+          maxLength: 50
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 255
+        filiere:
+          type: string
+          minLength: 1
+          title: Filière
+          maxLength: 100
+        statut:
+          allOf:
+          - $ref: '#/components/schemas/StatutCarteEnum'
+          title: Statut de la carte
+        certificat_pub:
+          type: string
+          minLength: 1
+          title: Certificat X.509 (PEM)
+          description: Certificat de la carte, utilisé pour vérifier les signatures.
+        compte:
+          type: string
+          format: uuid
+          title: Compte de connexion
+          nullable: true
+    PatchedTerminalRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          description: 'Code unique du terminal, ex : RESTO-01.'
+          maxLength: 20
+        type:
+          $ref: '#/components/schemas/TypeTerminalEnum'
+        libelle:
+          type: string
+          title: Libellé
+          maxLength: 100
+        actif:
+          type: boolean
+    PayerRequest:
+      type: object
+      description: Entrée de POST /api/scolarite/payer/.
+      properties:
+        uid:
+          type: string
+          minLength: 1
+          maxLength: 20
+        type_periode:
+          $ref: '#/components/schemas/PayerTypePeriodeEnum'
+        periode_couverte:
+          type: string
+          minLength: 1
+          maxLength: 7
+        montant:
+          type: integer
+          minimum: 1
+      required:
+      - montant
+      - periode_couverte
+      - type_periode
+      - uid
+    PayerTypePeriodeEnum:
+      enum:
+      - mensuel
+      - semestriel
+      type: string
+      description: |-
+        * `mensuel` - mensuel
+        * `semestriel` - semestriel
+    ReponseBlocage:
+      type: object
+      description: Réponse de /api/carte/bloquer/ (documentation).
+      properties:
+        uid:
+          type: string
+        statut:
+          type: string
+        detail:
+          type: string
+      required:
+      - detail
+      - statut
+      - uid
+    ReponseConnexion:
+      type: object
+      description: Réponse de /api/auth/login/ (documentation OpenAPI).
+      properties:
+        access:
+          type: string
+          description: JWT d'accès (durée 15 min).
+        refresh:
+          type: string
+          description: JWT de rafraîchissement.
+        role:
+          type: string
+        username:
+          type: string
+        user_id:
+          type: string
+          format: uuid
+      required:
+      - access
+      - refresh
+      - role
+      - user_id
+      - username
+    ReponseDashboard:
+      type: object
+      description: KPIs renvoyés par /api/stats/dashboard/ (documentation).
+      properties:
+        etudiants_total:
+          type: integer
+        cartes_actives:
+          type: integer
+        cartes_bloquees:
+          type: integer
+        transactions_total:
+          type: integer
+        transactions_aujourdhui:
+          type: integer
+        repartition_statut:
+          type: object
+          additionalProperties:
+            type: integer
+        volume_debit_centimes:
+          type: integer
+        volume_credit_centimes:
+          type: integer
+        solde_total_centimes:
+          type: integer
+      required:
+      - cartes_actives
+      - cartes_bloquees
+      - etudiants_total
+      - repartition_statut
+      - solde_total_centimes
+      - transactions_aujourdhui
+      - transactions_total
+      - volume_credit_centimes
+      - volume_debit_centimes
+    ReponseScan:
+      type: object
+      description: Réponse d'un scan accepté (documentation).
+      properties:
+        accepte:
+          type: boolean
+        uid:
+          type: string
+        filiere:
+          type: string
+        statut_carte:
+          type: string
+        terminal:
+          type: string
+        type_scan:
+          type: string
+        scan_id:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - accepte
+      - filiere
+      - scan_id
+      - statut_carte
+      - terminal
+      - type_scan
+      - uid
+    RoleEnum:
+      enum:
+      - etudiant
+      - caissier
+      - controleur
+      - admin
+      type: string
+      description: |-
+        * `etudiant` - Étudiant
+        * `caissier` - Caissier
+        * `controleur` - Contrôleur
+        * `admin` - Administrateur
+    ScanRequest:
+      type: object
+      description: Message de scan reçu par /api/iot/scan/ (équivalent HTTP du MQTT).
+      properties:
+        uid:
+          type: string
+          minLength: 1
+          maxLength: 20
+        terminal_id:
+          type: string
+          minLength: 1
+          maxLength: 20
+        timestamp:
+          type: integer
+          description: Epoch en millisecondes.
+        nonce:
+          type: string
+          minLength: 1
+          maxLength: 64
+        signature:
+          type: string
+          minLength: 1
+        type:
+          allOf:
+          - $ref: '#/components/schemas/TypeScanEnum'
+          default: identification
+      required:
+      - nonce
+      - signature
+      - terminal_id
+      - timestamp
+      - uid
+    Solde:
+      type: object
+      properties:
+        uid:
+          type: string
+          readOnly: true
+        montant:
+          type: integer
+          readOnly: true
+          title: Montant (centimes FCFA)
+        montant_fcfa:
+          type: integer
+          readOnly: true
+        version:
+          type: integer
+          readOnly: true
+        mis_a_jour:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Mis à jour le
+      required:
+      - mis_a_jour
+      - montant
+      - montant_fcfa
+      - uid
+      - version
+    StatutCarteEnum:
+      enum:
+      - actif
+      - suspendu
+      - bloque
+      type: string
+      description: |-
+        * `actif` - Actif
+        * `suspendu` - Suspendu
+        * `bloque` - Bloqué
+    StatutPaiementEnum:
+      enum:
+      - valide
+      - annule
+      - rembourse
+      type: string
+      description: |-
+        * `valide` - Valide
+        * `annule` - Annulé
+        * `rembourse` - Remboursé
+    StatutScolarite:
+      type: object
+      description: |-
+        Sérialise le contrat figé de /api/scolarite/statut/<uid>/.
+
+        Sert surtout de documentation/validation du format de sortie.
+      properties:
+        uid:
+          type: string
+        filiere:
+          type: string
+        statut:
+          $ref: '#/components/schemas/StatutScolariteStatutEnum'
+        derniere_periode:
+          type: string
+          nullable: true
+        mois_de_retard:
+          type: integer
+        token_valide:
+          type: boolean
+      required:
+      - derniere_periode
+      - filiere
+      - mois_de_retard
+      - statut
+      - token_valide
+      - uid
+    StatutScolariteStatutEnum:
+      enum:
+      - a_jour
+      - en_retard
+      - exonere
+      type: string
+      description: |-
+        * `a_jour` - a_jour
+        * `en_retard` - en_retard
+        * `exonere` - exonere
+    StatutTransactionEnum:
+      enum:
+      - valide
+      - refuse
+      - suspect
+      - annule
+      type: string
+      description: |-
+        * `valide` - Validée
+        * `refuse` - Refusée
+        * `suspect` - Suspecte
+        * `annule` - Annulée
+    Terminal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          title: Identifiant
+        code:
+          type: string
+          description: 'Code unique du terminal, ex : RESTO-01.'
+          maxLength: 20
+        type:
+          $ref: '#/components/schemas/TypeTerminalEnum'
+        type_libelle:
+          type: string
+          readOnly: true
+        libelle:
+          type: string
+          title: Libellé
+          maxLength: 100
+        actif:
+          type: boolean
+        cree_le:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Créé le
+      required:
+      - code
+      - cree_le
+      - id
+      - type
+      - type_libelle
+    TerminalRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          description: 'Code unique du terminal, ex : RESTO-01.'
+          maxLength: 20
+        type:
+          $ref: '#/components/schemas/TypeTerminalEnum'
+        libelle:
+          type: string
+          title: Libellé
+          maxLength: 100
+        actif:
+          type: boolean
+      required:
+      - code
+      - type
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          title: Identifiant
+        uid:
+          type: string
+          readOnly: true
+        terminal_code:
+          type: string
+          readOnly: true
+        type:
+          allOf:
+          - $ref: '#/components/schemas/TypeTransactionEnum'
+          readOnly: true
+        type_libelle:
+          type: string
+          readOnly: true
+        montant:
+          type: integer
+          readOnly: true
+          title: Montant (centimes FCFA)
+        statut:
+          allOf:
+          - $ref: '#/components/schemas/StatutTransactionEnum'
+          readOnly: true
+        statut_libelle:
+          type: string
+          readOnly: true
+        score_fraude:
+          type: integer
+          readOnly: true
+          nullable: true
+        metadata:
+          readOnly: true
+          nullable: true
+        cree_le:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Créé le
+      required:
+      - cree_le
+      - id
+      - metadata
+      - montant
+      - score_fraude
+      - statut
+      - statut_libelle
+      - terminal_code
+      - type
+      - type_libelle
+      - uid
+    TypePeriodeEnum:
+      enum:
+      - mensuel
+      - semestriel
+      - exoneration
+      type: string
+      description: |-
+        * `mensuel` - Mensuel
+        * `semestriel` - Semestriel
+        * `exoneration` - Exonération
+    TypeScanEnum:
+      enum:
+      - identification
+      - debit
+      - credit
+      - controle
+      type: string
+      description: |-
+        * `identification` - Identification
+        * `debit` - Débit
+        * `credit` - Crédit
+        * `controle` - Contrôle
+    TypeTerminalEnum:
+      enum:
+      - restaurant
+      - reprographie
+      - transport
+      - recharge
+      - controle
+      type: string
+      description: |-
+        * `restaurant` - Restaurant
+        * `reprographie` - Reprographie
+        * `transport` - Transport
+        * `recharge` - Recharge
+        * `controle` - Contrôle
+    TypeTransactionEnum:
+      enum:
+      - debit
+      - credit
+      - remboursement
+      type: string
+      description: |-
+        * `debit` - Débit
+        * `credit` - Crédit
+        * `remboursement` - Remboursement
+    Utilisateur:
+      type: object
+      description: Profil renvoyé par `/api/auth/me/`.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          title: Identifiant
+        username:
+          type: string
+          readOnly: true
+          title: Nom d’utilisateur
+          description: Requis. 150 caractères maximum. Uniquement des lettres, nombres
+            et les caractères « @ », « . », « + », « - » et « _ ».
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Adresse e-mail
+        first_name:
+          type: string
+          readOnly: true
+          title: Prénom
+        last_name:
+          type: string
+          readOnly: true
+          title: Nom
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+          title: Rôle
+        role_libelle:
+          type: string
+          readOnly: true
+        uid_carte:
+          type: string
+          nullable: true
+          readOnly: true
+        is_active:
+          type: boolean
+          readOnly: true
+          title: Actif
+          description: Précise si l’utilisateur doit être considéré comme actif. Décochez
+            ceci plutôt que de supprimer le compte.
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Date d’inscription
+      required:
+      - date_joined
+      - email
+      - first_name
+      - id
+      - is_active
+      - last_name
+      - role
+      - role_libelle
+      - uid_carte
+      - username
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+tags:
+- name: Authentification
+  description: Connexion JWT et profil.
+- name: Monétique
+  description: Soldes, débits, crédits, stats.
+- name: Scolarité
+  description: Paiements, statut, reçus.
+- name: IoT
+  description: Réception des scans de carte.
+- name: Étudiants
+  description: Gestion des fiches étudiants.
+- name: Terminaux
+  description: Gestion des terminaux.

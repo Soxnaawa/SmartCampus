@@ -1,0 +1,441 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-0001-4000-8000-smartcampus01",
+    "name": "Smart Campus — Backend (P3)",
+    "description": "Collection de test de l'API Smart Campus.\n\nUtilisation :\n1. Lancer le serveur : `python manage.py runserver`.\n2. Dans le dossier *Auth*, exécuter le **Login** correspondant au rôle voulu (admin / caissier / contrôleur / étudiant). Le token est sauvegardé automatiquement dans la variable {{access_token}} et réutilisé par toutes les requêtes.\n3. Tester les endpoints.\n\nRôles requis (rappel) :\n- payer scolarité = caissier ; statut = contrôleur/admin ; débit = caissier/admin ;\n- bloquer carte / dashboard / exonérer = admin ; solde & historique = l'étudiant concerné ou admin.\n\nLes endpoints `/api/transaction/debit/` et `/api/iot/scan/` exigent une enveloppe SIGNÉE par la carte : générer le corps avec `python manage.py simuler_scan --uid SC-2025-00001 --terminal RESTO-01` puis coller le JSON (valable 30 s).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000" },
+    { "key": "uid", "value": "SC-2025-00001" },
+    { "key": "access_token", "value": "" },
+    { "key": "refresh_token", "value": "" },
+    { "key": "paiement_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = pm.response.json();",
+                  "pm.collectionVariables.set('access_token', d.access);",
+                  "pm.collectionVariables.set('refresh_token', d.refresh);",
+                  "pm.test('login ok', () => pm.response.code === 200);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin1234\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login", ""]
+            }
+          }
+        },
+        {
+          "name": "Login (caissier)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = pm.response.json();",
+                  "pm.collectionVariables.set('access_token', d.access);",
+                  "pm.collectionVariables.set('refresh_token', d.refresh);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"caissier\",\n  \"password\": \"caissier1234\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login", ""]
+            }
+          }
+        },
+        {
+          "name": "Login (controleur)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = pm.response.json();",
+                  "pm.collectionVariables.set('access_token', d.access);",
+                  "pm.collectionVariables.set('refresh_token', d.refresh);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"controleur\",\n  \"password\": \"controleur1234\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login", ""]
+            }
+          }
+        },
+        {
+          "name": "Login (etudiant)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = pm.response.json();",
+                  "pm.collectionVariables.set('access_token', d.access);",
+                  "pm.collectionVariables.set('refresh_token', d.refresh);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"sc-2025-00001\",\n  \"password\": \"etudiant1234\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login", ""]
+            }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me", ""]
+            }
+          }
+        },
+        {
+          "name": "Refresh",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "refresh", ""]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Monetique",
+      "item": [
+        {
+          "name": "Solde (etudiant le sien / admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/solde/{{uid}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "solde", "{{uid}}", ""]
+            }
+          }
+        },
+        {
+          "name": "Historique transactions (filtres)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/transactions/{{uid}}/?type=debit&page=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transactions", "{{uid}}", ""],
+              "query": [
+                { "key": "type", "value": "debit" },
+                { "key": "statut", "value": "valide", "disabled": true },
+                { "key": "date_debut", "value": "2025-01-01", "disabled": true },
+                { "key": "date_fin", "value": "2026-12-31", "disabled": true },
+                { "key": "page", "value": "1" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Credit / recharge (caissier ou admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": \"{{uid}}\",\n  \"montant\": 50000,\n  \"terminal_id\": \"RECH-01\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/transaction/credit/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transaction", "credit", ""]
+            }
+          }
+        },
+        {
+          "name": "Debit (caissier/admin + SIGNATURE carte)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": \"{{uid}}\",\n  \"terminal_id\": \"RESTO-01\",\n  \"timestamp\": 0,\n  \"nonce\": \"REMPLACER\",\n  \"signature\": \"REMPLACER\",\n  \"montant\": 15000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/transaction/debit/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transaction", "debit", ""]
+            },
+            "description": "Corps signé requis. Générer avec :\n`python manage.py simuler_scan --uid SC-2025-00001 --terminal RESTO-01`\npuis copier uid/terminal_id/timestamp/nonce/signature dans ce corps et AJOUTER `montant`. Valable 30 s."
+          }
+        },
+        {
+          "name": "Bloquer carte (admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": \"{{uid}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/carte/bloquer/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "carte", "bloquer", ""]
+            }
+          }
+        },
+        {
+          "name": "Dashboard / KPIs (admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/stats/dashboard/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stats", "dashboard", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Scolarite",
+      "item": [
+        {
+          "name": "Payer (caissier)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('paiement_id', pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": \"{{uid}}\",\n  \"type_periode\": \"mensuel\",\n  \"periode_couverte\": \"2026-06\",\n  \"montant\": 5000000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/scolarite/payer/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "scolarite", "payer", ""]
+            }
+          }
+        },
+        {
+          "name": "Statut controle (controleur/admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/scolarite/statut/{{uid}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "scolarite", "statut", "{{uid}}", ""]
+            }
+          }
+        },
+        {
+          "name": "Recu PDF (etudiant le sien / admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/scolarite/recu/{{paiement_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "scolarite", "recu", "{{paiement_id}}", ""]
+            },
+            "description": "Renvoie un PDF binaire. Utiliser « Send and Download » pour l'enregistrer. {{paiement_id}} est rempli automatiquement après un Payer réussi."
+          }
+        },
+        {
+          "name": "Exonerer (admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": \"{{uid}}\",\n  \"periode_couverte\": \"2026-S1\",\n  \"montant\": 0\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/scolarite/exonerer/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "scolarite", "exonerer", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "IoT",
+      "item": [
+        {
+          "name": "Scan carte (SIGNATURE — pas de JWT)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": \"{{uid}}\",\n  \"terminal_id\": \"RESTO-01\",\n  \"timestamp\": 0,\n  \"nonce\": \"REMPLACER\",\n  \"signature\": \"REMPLACER\",\n  \"type\": \"identification\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/iot/scan/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "iot", "scan", ""]
+            },
+            "description": "Coller le JSON produit par `python manage.py simuler_scan --uid SC-2025-00001 --terminal RESTO-01`. Pas de token requis : l'authentification est la signature de la carte."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Referentiels",
+      "item": [
+        {
+          "name": "Liste etudiants (caissier/admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/etudiants/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "etudiants", ""]
+            }
+          }
+        },
+        {
+          "name": "Detail etudiant (caissier/admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/etudiants/{{uid}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "etudiants", "{{uid}}", ""]
+            }
+          }
+        },
+        {
+          "name": "Liste terminaux (authentifie)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/terminaux/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "terminaux", ""]
+            }
+          }
+        },
+        {
+          "name": "Healthcheck (public)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/sante/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "sante", ""]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
