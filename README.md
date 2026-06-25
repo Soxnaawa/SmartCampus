@@ -132,14 +132,7 @@ X.509** (clés privées dans `certs/cards/<uid>.pem` pour pouvoir simuler des
 scans signés), des soldes, un historique de transactions, et des paiements de
 scolarité produisant des statuts variés (à jour, en retard, exonéré).
 
-Comptes créés :
 
-| Identifiant | Mot de passe | Rôle |
-|---|---|---|
-| `admin` | `admin1234` | administrateur (superuser) |
-| `caissier` | `caissier1234` | caissier |
-| `controleur` | `controleur1234` | contrôleur |
-| `sc-2025-00001` … | `etudiant1234` | étudiant (un par carte) |
 
 ---
 
@@ -191,8 +184,6 @@ Documents versionnés dans le dépôt :
 - Schéma figé : [`docs/openapi.yaml`](docs/openapi.yaml) — régénérable via
   `python manage.py spectacular --file docs/openapi.yaml`
 
-Une **collection Postman** prête à importer est fournie :
-[`postman/SmartCampus.postman_collection.json`](postman/SmartCampus.postman_collection.json).
 
 ## Endpoints de l'API
 Préfixe commun : **`/api/`** (sans numéro de version). Réponses en JSON.
