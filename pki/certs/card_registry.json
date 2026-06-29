@@ -1,0 +1,202 @@
+[
+  {
+    "uid": "SC-2025-00101",
+    "student": "Amadou Diallo",
+    "filiere": "DIC2/M1-SSI",
+    "serial": "113301028346819310859544416822004016321094469400",
+    "fingerprint": "540c3a0791cf8eef2d79a60f3415c49338ca230992bbb872f87b53aab2a7c1fc",
+    "not_after": "2027-06-29T09:56:56+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00101.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00101.crt"
+  },
+  {
+    "uid": "SC-2025-00102",
+    "student": "Fatou Mbaye",
+    "filiere": "DIC2/M1-SSI",
+    "serial": "522798868253647115097109528324914341272911273811",
+    "fingerprint": "b94d3432847eb85ad227ffdc6df986fe6f1ada40a50b35cb019a69fbcb0ee9cd",
+    "not_after": "2027-06-29T09:56:56+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00102.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00102.crt"
+  },
+  {
+    "uid": "SC-2025-00103",
+    "student": "Ibrahima Sow",
+    "filiere": "DIC2/M1-GL",
+    "serial": "278878112775805612227219155682692157097866443027",
+    "fingerprint": "1552d9bcb2156d698224d6d41cdabb4f9ce23be8f6ca38a004ae5a365bedce42",
+    "not_after": "2027-06-29T09:56:56+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00103.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00103.crt"
+  },
+  {
+    "uid": "SC-2025-00104",
+    "student": "Mariama Diop",
+    "filiere": "DIC2/M1-SSI",
+    "serial": "47709331820869168770557165743384580227632361825",
+    "fingerprint": "00775882f72fb3bd7144910a27ccc0ec8a38351ec282223d632e47f36dd76a80",
+    "not_after": "2027-06-29T09:56:56+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00104.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00104.crt"
+  },
+  {
+    "uid": "SC-2025-00105",
+    "student": "Ousmane Ba",
+    "filiere": "DIC2/M1-GL",
+    "serial": "360134947512517013709110864053989071458818019768",
+    "fingerprint": "44fe2e05485c91a195797db382d29fb0de9e9dbdb91717d6a043e078a3d9f8a1",
+    "not_after": "2027-06-29T09:56:56+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00105.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00105.crt"
+  },
+  {
+    "uid": "SC-2025-00106",
+    "student": "Aissatou Ndiaye",
+    "filiere": "DIC2/M1-SSI",
+    "serial": "455114915167633802406181457915030915087558434516",
+    "fingerprint": "7825bd701e5de21cf9cb8b4dc048de4929be604a6986c9067b1ffbce368ec98e",
+    "not_after": "2027-06-29T09:56:57+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00106.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00106.crt"
+  },
+  {
+    "uid": "SC-2025-00107",
+    "student": "Moussa Sarr",
+    "filiere": "DIC2/M1-RI",
+    "serial": "108733578303049239469317709108451064862480827988",
+    "fingerprint": "d10faed7b4c2d71f77252fbdef7278332b508845c9547f229f32217e3147b87d",
+    "not_after": "2027-06-29T09:56:57+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00107.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00107.crt"
+  },
+  {
+    "uid": "SC-2025-00108",
+    "student": "Rokhaya Fall",
+    "filiere": "DIC2/M1-SSI",
+    "serial": "676743851532904573017006027023313528107370809001",
+    "fingerprint": "bba5af44e77b8b01e88bbf5b65a6d976bcf6ed23e4be052a7f8f0e2fa1e69093",
+    "not_after": "2027-06-29T09:56:57+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00108.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00108.crt"
+  },
+  {
+    "uid": "SC-2025-00109",
+    "student": "Cheikh Gueye",
+    "filiere": "DIC2/M1-GL",
+    "serial": "183209115301877767742006803337013557717131818916",
+    "fingerprint": "64661eb4300d96156cda97e194680ea598bbe4f07459ea7f48736517a3a0be21",
+    "not_after": "2027-06-29T09:56:57+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00109.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00109.crt"
+  },
+  {
+    "uid": "SC-2025-00110",
+    "student": "Ndéye Diagne",
+    "filiere": "DIC2/M1-SSI",
+    "serial": "186765321970243593177013940469248318581565601754",
+    "fingerprint": "077f6fb17d55ac0928231a2aab2c654f8858dbb507dc8504d9a38d2855c671d0",
+    "not_after": "2027-06-29T09:56:57+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00110.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00110.crt"
+  },
+  {
+    "uid": "SC-2025-00111",
+    "student": "Pape Thiaw",
+    "filiere": "DIC2/M1-RI",
+    "serial": "483934987002364839397234583459393546375145368970",
+    "fingerprint": "a57aa1d3c699e1204490963403360511197887892d41a96ac4741f156109197e",
+    "not_after": "2027-06-29T09:56:58+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00111.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00111.crt"
+  },
+  {
+    "uid": "SC-2025-00112",
+    "student": "Astou Niang",
+    "filiere": "DIC2/M1-SSI",
+    "serial": "26895583980411815838023554206312772229731835094",
+    "fingerprint": "b400cdeeff7dc8b6bafd94a02dd633c6a7f32033baccdf89767dd25849c6583f",
+    "not_after": "2027-06-29T09:56:58+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00112.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00112.crt"
+  },
+  {
+    "uid": "SC-2025-00113",
+    "student": "Aliou Traoré",
+    "filiere": "DIC2/M1-GL",
+    "serial": "342480815803895486151544042954004621349536519371",
+    "fingerprint": "85b03c7a82960ff13883dbc35b5377a3500e7fb53a51ea272c685aaf2fe7b3a7",
+    "not_after": "2027-06-29T09:56:58+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00113.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00113.crt"
+  },
+  {
+    "uid": "SC-2025-00114",
+    "student": "Khadija Coulibaly",
+    "filiere": "DIC2/M1-SSI",
+    "serial": "418870328263957397228469021732675061538263144261",
+    "fingerprint": "005290884a96ed1dc311cc4c29d54470f3ddeb330ad87f590303b5585f21367a",
+    "not_after": "2027-06-29T09:56:58+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00114.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00114.crt"
+  },
+  {
+    "uid": "SC-2025-00115",
+    "student": "Mamadou Konaté",
+    "filiere": "DIC2/M1-RI",
+    "serial": "455045261409759469846714379745970653700968640693",
+    "fingerprint": "888a22ab095d85601a4780f27c7bfe909df241b832045ef09ce7b5451ba1add4",
+    "not_after": "2027-06-29T09:56:58+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00115.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00115.crt"
+  },
+  {
+    "uid": "SC-2025-00116",
+    "student": "Bineta Diouf",
+    "filiere": "DIC2/M1-SSI",
+    "serial": "261793317838417851064804196166744753902141781774",
+    "fingerprint": "310fba8e66c0fa04dd8e2d2dae87d1ea576af9549ab9a618aa35b1ce07159455",
+    "not_after": "2027-06-29T09:56:58+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00116.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00116.crt"
+  },
+  {
+    "uid": "SC-2025-00117",
+    "student": "Seydou Camara",
+    "filiere": "DIC2/M1-GL",
+    "serial": "137766057594393981013362836632565874987674988832",
+    "fingerprint": "3b6651f17e60a203317506534ab2a0b3f366e29dd495571a8ad4fc5733088d37",
+    "not_after": "2027-06-29T09:56:58+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00117.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00117.crt"
+  },
+  {
+    "uid": "SC-2025-00118",
+    "student": "Aminata Sy",
+    "filiere": "DIC2/M1-SSI",
+    "serial": "558630264727467473898907733968369075170431102755",
+    "fingerprint": "8abfd15fc1b20294aa14768c5ea98b4aed6fd805b2fb038a2f2d36e0c128083a",
+    "not_after": "2027-06-29T09:56:58+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00118.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00118.crt"
+  },
+  {
+    "uid": "SC-2025-00119",
+    "student": "Landing Badji",
+    "filiere": "DIC2/M1-RI",
+    "serial": "556775076981907757886737165898621857335117183200",
+    "fingerprint": "d2e890e6419ecc9fa5bc4f4f4d980b15bab7c33ccd7f84178dc829d2e697cd07",
+    "not_after": "2027-06-29T09:56:59+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00119.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00119.crt"
+  },
+  {
+    "uid": "SC-2025-00120",
+    "student": "Sokhna Thiam",
+    "filiere": "DIC2/M1-SSI",
+    "serial": "723704845261548699076369246757944922107831778950",
+    "fingerprint": "7f47d54e8375f2284393127c994314a8458255943248097d27418e638ba70ed3",
+    "not_after": "2027-06-29T09:56:59+00:00",
+    "key_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00120.key",
+    "cert_file": "C:\\Users\\Ousmane_DIOP\\Documents\\ESP\\Master 1\\Semestre 2\\Projet personnel\\smartCampus\\SmartCampus\\pki\\cards\\SC-2025-00120.crt"
+  }
+]

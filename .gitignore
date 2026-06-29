@@ -1,0 +1,20 @@
+# Clés privées — JAMAIS dans git
+pki/root-ca/*.key
+pki/cards/*.key
+pki/**/*.p12
+pki/**/*.pfx
+
+# Caches Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Rapports générés
+audit_*.json
+audit_*.md
+
+# Environnement
+.env
+*.env
+venv/
+.venv/
