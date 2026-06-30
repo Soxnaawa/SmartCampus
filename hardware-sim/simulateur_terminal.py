@@ -110,6 +110,96 @@ def simuler_evenement(carte, service=None, verbose=True):
     payload = construire_payload(carte, service=service, verbose=verbose)
     return envoyer_scan(payload, verbose=verbose)
 
+
+JWT_CAISSIER = None
+
+def se_connecter(username, password):
+    """Se connecte a l'API et recupere un token JWT (access)."""
+    url = f"{API_BASE}/api/auth/login/"
+    try:
+        reponse = requests.post(url, json={"username": username, "password": password}, timeout=5)
+        if reponse.status_code == 200:
+            data = reponse.json()
+            print(f"Connexion reussie pour {username}")
+            return data.get("access")
+        else:
+            print(f"Echec connexion ({reponse.status_code}): {reponse.json()}")
+            return None
+    except requests.exceptions.ConnectionError:
+        print("API non disponible")
+        return None
+
+def simuler_controle(carte, service="restaurant", verbose=True):
+    payload = construire_payload(carte, service=service, verbose=False)
+    payload["type"] = "controle"
+    if verbose:
+        print(f"\n--- Controle (acces/scolarite) ---")
+        print(f"Carte   : {carte['uid']} ({carte['prenom']} {carte['nom']})")
+        print(f"Payload : {json.dumps(payload, indent=2)}")
+    return envoyer_scan(payload, verbose=verbose)
+
+def simuler_debit(carte, montant=500, service="restaurant", verbose=True):
+    terminal_id = SERVICE_TERMINAL.get(service, "RESTO-01")
+    nonce_hex = secrets.token_hex(32)
+    timestamp_ms = int(time.time() * 1000)
+    cle_privee = charger_cle_privee(carte["uid"])
+    signature = signer_nonce(cle_privee, nonce_hex) if cle_privee else "SIGNATURE_MANQUANTE"
+    payload = {
+        "uid": carte["uid"], "terminal_id": terminal_id, "timestamp": timestamp_ms,
+        "nonce": nonce_hex, "signature": signature, "montant": montant,
+    }
+    if verbose:
+        print(f"\n--- Debit (paiement) ---")
+        print(f"Carte   : {carte['uid']} ({carte['prenom']} {carte['nom']})")
+        print(f"Montant : {montant} FCFA -> terminal {terminal_id}")
+        print(f"Payload : {json.dumps(payload, indent=2)}")
+    headers = {}
+    if JWT_CAISSIER:
+        headers["Authorization"] = f"Bearer {JWT_CAISSIER}"
+    url = f"{API_BASE}/api/transaction/debit/"
+    try:
+        reponse = requests.post(url, json=payload, headers=headers, timeout=5)
+        try:
+            corps = reponse.json()
+        except ValueError:
+            corps = {"detail": reponse.text}
+        if verbose:
+            print(f"Statut HTTP: {reponse.status_code}")
+            print(f"Reponse    : {corps}")
+        return {"ok": reponse.status_code in (200, 201), "status_code": reponse.status_code, "body": corps}
+    except requests.exceptions.ConnectionError:
+        if verbose:
+            print("API non disponible")
+        return {"ok": False, "status_code": None, "body": {"detail": "API non disponible"}}
+
+def simuler_credit(carte, montant=2000, verbose=True):
+    payload = {"uid": carte["uid"], "montant": montant}
+    if verbose:
+        print(f"\n--- Credit (recharge) ---")
+        print(f"Carte   : {carte['uid']} ({carte['prenom']} {carte['nom']})")
+        print(f"Montant : +{montant} FCFA")
+        print(f"Payload : {json.dumps(payload, indent=2)}")
+    headers = {}
+    if JWT_CAISSIER:
+        headers["Authorization"] = f"Bearer {JWT_CAISSIER}"
+    url = f"{API_BASE}/api/transaction/credit/"
+    try:
+        reponse = requests.post(url, json=payload, headers=headers, timeout=5)
+        try:
+            corps = reponse.json()
+        except ValueError:
+            corps = {"detail": reponse.text}
+        if verbose:
+            print(f"Statut HTTP: {reponse.status_code}")
+            print(f"Reponse    : {corps}")
+        return {"ok": reponse.status_code in (200, 201), "status_code": reponse.status_code, "body": corps}
+    except requests.exceptions.ConnectionError:
+        if verbose:
+            print("API non disponible")
+        return {"ok": False, "status_code": None, "body": {"detail": "API non disponible"}}
+
+
+
 if __name__ == "__main__":
     cartes = charger_cartes()
     carte = random.choice(cartes)
