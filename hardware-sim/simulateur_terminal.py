@@ -18,6 +18,7 @@ SERVICE_TERMINAL = {
     "restaurant":   "RESTO-01",
     "transport":    "BUS-01",
 }
+
 def charger_cartes(chemin="cartes.json"):
     with open(chemin, "r") as f:
         return json.load(f)
@@ -43,30 +44,34 @@ def signer_nonce(cle_privee_pem, nonce_hex):
     signature = cle.sign(nonce_bytes, padding.PKCS1v15(), hashes.SHA256())
     return base64.b64encode(signature).decode("ascii")
 
-def simuler_evenement(carte):
-    services = [s for s in carte["services_autorises"] if s in SERVICE_TERMINAL]
-    if not services:
-        services = ["restaurant"]
-    service = random.choice(services)
+def construire_payload(carte, service=None, verbose=True):
+    """Construit et signe un payload de scan pour une carte donnee."""
+    services_dispo = [s for s in carte["services_autorises"] if s in SERVICE_TERMINAL]
+    if not services_dispo:
+        services_dispo = ["restaurant"]
+    if service is None or service not in services_dispo:
+        service = random.choice(services_dispo)
     terminal_id = SERVICE_TERMINAL[service]
 
     nonce_hex = secrets.token_hex(32)
     timestamp_ms = int(time.time() * 1000)
 
-    print(f"\n--- Terminal RFID (RC522 simule) ---")
-    print(f"Carte      : {carte['uid']} ({carte['prenom']} {carte['nom']})")
-    print(f"Service    : {service} -> terminal {terminal_id}")
-    print(f"Nonce      : {nonce_hex[:16]}...")
-
     cle_privee = charger_cle_privee(carte["uid"])
     if cle_privee:
         signature = signer_nonce(cle_privee, nonce_hex)
-        print(f"Signature  : [OK] RSA generee")
+        sig_statut = "[OK] RSA generee"
     else:
         signature = "SIGNATURE_MANQUANTE"
-        print(f"Signature  : [ABSENT] cle privee absente -- mode mock")
+        sig_statut = "[ABSENT] cle privee absente -- mode mock"
 
-    payload = {
+    if verbose:
+        print(f"\n--- Terminal RFID (RC522 simule) ---")
+        print(f"Carte      : {carte['uid']} ({carte['prenom']} {carte['nom']})")
+        print(f"Service    : {service} -> terminal {terminal_id}")
+        print(f"Nonce      : {nonce_hex[:16]}...")
+        print(f"Signature  : {sig_statut}")
+
+    return {
         "uid": carte["uid"],
         "terminal_id": terminal_id,
         "timestamp": timestamp_ms,
@@ -75,16 +80,35 @@ def simuler_evenement(carte):
         "type": "identification",
     }
 
-    print(f"Payload    : {json.dumps(payload, indent=2)}")
-
+def envoyer_scan(payload, verbose=True):
+    """Envoie un payload de scan a l'API P3 et gere les erreurs proprement."""
+    if verbose:
+        print(f"Payload    : {json.dumps(payload, indent=2)}")
     try:
         reponse = requests.post(ENDPOINT_SCAN, json=payload, timeout=5)
-        print(f"Statut HTTP: {reponse.status_code}")
-        print(f"Reponse    : {reponse.json()}")
-        return reponse.json()
+        try:
+            corps = reponse.json()
+        except ValueError:
+            corps = {"detail": reponse.text}
+
+        if verbose:
+            print(f"Statut HTTP: {reponse.status_code}")
+            print(f"Reponse    : {corps}")
+
+        return {
+            "ok": reponse.status_code == 200,
+            "status_code": reponse.status_code,
+            "body": corps,
+        }
     except requests.exceptions.ConnectionError:
-        print("Resultat   : API non disponible -- mode mock active")
-        return {"status": "mock", "message": "API P3 non disponible"}
+        if verbose:
+            print("Resultat   : API non disponible -- mode mock active")
+        return {"ok": False, "status_code": None, "body": {"detail": "API P3 non disponible"}}
+
+def simuler_evenement(carte, service=None, verbose=True):
+    """Construit, signe et envoie un scan pour une carte. Fonction principale reutilisable."""
+    payload = construire_payload(carte, service=service, verbose=verbose)
+    return envoyer_scan(payload, verbose=verbose)
 
 if __name__ == "__main__":
     cartes = charger_cartes()
