@@ -1,7 +1,7 @@
 # Hardware Simulation — P2
 
 Ce dossier simule le comportement physique d'un terminal RFID et de cartes étudiantes
-sans matériel réel. Chaque scan est signé en RSA et envoyé en HTTP vers l'API de P3.
+sans matériel réel. Chaque scan est signé en RSA et envoyé en HTTPS vers l'API de P3.
 
 ## Fichiers
 
@@ -34,8 +34,11 @@ Si le serveur de P3 tourne sur une autre machine (réseau local ou ngrok), chang
 cette ligne dans `simulateur_terminal.py` avec l'IP ou l'URL fournie par P3, par exemple :
 
 ```python
-API_BASE = "lien ngrok en attente"
+API_BASE = "https://subcerebellar-chalcographic-sawyer.ngrok-free.dev"
 ```
+
+⚠️ Un lien ngrok gratuit est temporaire et change à chaque relance du tunnel côté
+P3. Penser à demander le lien à jour avant chaque session de test ou la soutenance.
 
 ## Lancer
 
@@ -85,3 +88,23 @@ la carte physique et la clé privée serait stockée de manière sécurisée sur
 carte elle-même (pas en fichier `.pem` local). Le microcontrôleur enverrait le
 même format JSON que ce simulateur, via WiFi. Le format du message reste
 identique — seule la couche de lecture et de stockage de la clé change.
+
+## Statut — Validé en conditions réelles
+
+Tous les scripts ont été testés avec succès contre le serveur de P3 exposé à
+distance via ngrok (HTTPS) :
+
+- `simulateur_terminal.py` : scan unique signé RSA, accepté (200) avec
+  enregistrement en base côté P3 (`scan_id` retourné)
+- `demo.py` : 5 scans enchaînés, 3 acceptés / 2 refusés (cartes inactives,
+  comportement attendu)
+- `generer_flux.py -n 30` : 22 scans acceptés / 8 refusés (cartes inactives),
+  0 erreur réseau
+
+Les refus en `403` pour les cartes inactives sont un comportement normal :
+ils prouvent que le contrôle de sécurité côté P3 fonctionne correctement,
+pas un bug du simulateur.
+
+Pour relancer les tests contre le serveur distant de P3, modifier `API_BASE`
+dans `simulateur_terminal.py` avec l'URL ngrok (ou IP locale) fournie par P3,
+et s'assurer que `certs/cards/` contient les clés `.pem` partagées par lui.
