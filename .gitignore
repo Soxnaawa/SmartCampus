@@ -1,0 +1,12 @@
+# Cles privees - NE JAMAIS COMMIT
+certs/
+*.pem
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Logs
+*.jsonl
