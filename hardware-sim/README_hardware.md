@@ -73,6 +73,40 @@ python demo.py
 `terminal_id` doit correspondre à un terminal existant côté P3 : `RESTO-01`,
 `RESTO-02` ou `BUS-01`.
 
+## Types de scan supportés
+
+En plus du scan d'identification simple, le module gère 3 types
+supplémentaires demandés par P3, testés dans `test_monetique.py` :
+
+- **identification** : verification simple de la carte (`simulateur_terminal.py`)
+- **controle** : acces a un service type scolarite/bibliotheque, meme
+  endpoint `/api/iot/scan/` avec `"type": "controle"`
+- **debit** : paiement, via `POST /api/transaction/debit/` (montant +
+  signature carte). Necessite une authentification caissier/admin (JWT)
+- **credit** : recharge de carte, via `POST /api/transaction/credit/`
+  (montant uniquement, pas de signature carte). Necessite aussi un JWT
+  caissier/admin
+
+## Authentification caissier (pour debit/credit)
+
+Les transactions debit/credit ne sont pas accessibles publiquement -- il
+faut d'abord se connecter pour obtenir un token JWT :
+
+```python
+token = se_connecter("caissier", "caissier1234")
+```
+
+Comptes de test fournis par P3 :
+
+| Compte | Mot de passe | Usage |
+|---|---|---|
+| `admin` | `admin1234` | acces complet |
+| `caissier` | `caissier1234` | debit / credit |
+| `controleur` | `controleur1234` | controle d'acces |
+
+`test_monetique.py` automatise cette connexion et teste les 3 nouveaux
+types de scan d'affilee.
+
 ## Comportement attendu
 
 - Si `certs/cards/<uid>.pem` existe : la signature RSA est réelle (`[OK]`)
@@ -100,7 +134,8 @@ distance via ngrok (HTTPS) :
   comportement attendu)
 - `generer_flux.py -n 30` : 22 scans acceptés / 8 refusés (cartes inactives),
   0 erreur réseau
-
+- `test_monetique.py` : connexion caissier + controle + debit (800 FCFA)
+  + credit (5000 FCFA), tous valides (HTTP 200/201)
 Les refus en `403` pour les cartes inactives sont un comportement normal :
 ils prouvent que le contrôle de sécurité côté P3 fonctionne correctement,
 pas un bug du simulateur.
