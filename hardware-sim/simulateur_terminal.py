@@ -16,10 +16,8 @@ CERTS_DIR = Path("certs/cards")  # cles privees generees par P3 (seed_data)
 
 SERVICE_TERMINAL = {
     "restaurant":   "RESTO-01",
-    "bibliotheque": "BIBLIO-01",
-    "transport":    "TRANSP-01",
+    "transport":    "BUS-01",
 }
-
 def charger_cartes(chemin="cartes.json"):
     with open(chemin, "r") as f:
         return json.load(f)
@@ -46,9 +44,11 @@ def signer_nonce(cle_privee_pem, nonce_hex):
     return base64.b64encode(signature).decode("ascii")
 
 def simuler_evenement(carte):
-    services = carte["services_autorises"]
+    services = [s for s in carte["services_autorises"] if s in SERVICE_TERMINAL]
+    if not services:
+        services = ["restaurant"]
     service = random.choice(services)
-    terminal_id = SERVICE_TERMINAL.get(service, "RESTO-01")
+    terminal_id = SERVICE_TERMINAL[service]
 
     nonce_hex = secrets.token_hex(32)
     timestamp_ms = int(time.time() * 1000)
