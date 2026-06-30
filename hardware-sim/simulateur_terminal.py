@@ -10,7 +10,7 @@ import time
 import requests
 from pathlib import Path
 
-API_BASE = "http://127.0.0.1:8000"
+API_BASE = "https://subcerebellar-chalcographic-sawyer.ngrok-free.dev"
 ENDPOINT_SCAN = f"{API_BASE}/api/iot/scan/"
 CERTS_DIR = Path("certs/cards")  # cles privees generees par P3 (seed_data)
 
