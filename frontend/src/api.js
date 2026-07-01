@@ -5,8 +5,10 @@ const API_BASE = "https://subcerebellar-chalcographic-sawyer.ngrok-free.dev";
 
 const api = axios.create({
   baseURL: API_BASE,
+  headers: {
+    "ngrok-skip-browser-warning": "true",
+  },
 });
-
 // Ajoute automatiquement le token JWT a chaque requete si present
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("smartcampus_token");
